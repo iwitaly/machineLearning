@@ -27,6 +27,7 @@ xTrain = np.array(dataFromCsvNamed('train.csv', True))
 yTrain = np.array(dataFromCsvNamed('trainLabels.csv', False))
 testSet = np.array(dataFromCsvNamed('test.csv', True))
 
+
 knn = KNeighborsClassifier()
 knn.fit(xTrain, yTrain)
 
