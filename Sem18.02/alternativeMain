@@ -1,0 +1,3 @@
+from pandas import read_csv, DataFrame, Series
+data = read_csv('train.csv')
+print data.as_matrix()

@@ -1,0 +1,9 @@
+from pandas import read_csv, DataFrame, Series
+import numpy as np
+
+data = read_csv('train.csv')
+data = data.as_matrix()
+
+data[data==np.nan] = -1
+
+print data
