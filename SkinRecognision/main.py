@@ -58,25 +58,47 @@ class PicturePredictor:
         return self.knn.predict(self.xTest)
 
     def createRandomForest(self, numberOfTrees):
+        #list with DecisionTreeClassifier's
         self.forest = []
 
         m = len(self.xTrain) / 2
 
+        #self second half of set as a class parametr
         X_train, self.X_test = self.xTrain[:m], self.xTrain[m:]
         Y_train, self.Y_test = self.yTrain[:m], self.yTrain[m:]
 
+        #create DecisionTreeClassifier's and fit them
         for i in xrange(numberOfTrees):
             tree = DecisionTreeClassifier(max_features=2)
             tree.fit(X_train, Y_train)
             self.forest.append(tree)
 
     def predict(self):
+        #1) predict with classifiers from self.forest
         predictions = []
         for tree in self.forest:
-            yPred= tree.predict(self.X_test)
+            yPred = tree.predict(self.X_test)
             predictions.append(yPred)
-        
+
+        #2) create summery preduction as a max votes from every tree
+        summeryPrediction = []
+        for i in range(len(predictions[0])):
+            numberOfPluses = 0
+            numberOfMinuses = 0
+            for predic in predictions:
+                if predic[i] == 1:
+                    numberOfPluses += 1
+                else:
+                    numberOfMinuses += 1
+            if numberOfPluses > numberOfMinuses:
+                summeryPrediction.append(1)
+            else:
+                summeryPrediction.append(-1)
+
+        #do something else
+        print metrics.accuracy_score(self.Y_test, summeryPrediction)
+
 
 pic = PicturePredictor()
-pic.createRandomForest(5)
+pic.createRandomForest(10)
 pic.predict()
