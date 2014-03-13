@@ -39,14 +39,14 @@ class PicturePredictor:
     #return kNN clasifier with fitted params
     def trainClassifierWithData(self, xTrain, yTrain):
         clf = KNeighborsClassifier()
-        parametrsDict = {'n_neighbors' : range(1, 10), 'metric' : ['manhattan', 'chebyshev']}
+        parametrsDict = {'n_neighbors' : range(1, 6)}
         clf = GridSearchCV(KNeighborsClassifier(), parametrsDict, cv=5, n_jobs=-1)
         clf.fit(xTrain, yTrain)
         return clf
 
     def __init__(self):
         self.xTrain, self.yTrain = self.dataFromCsvNamed('train.csv', True)
-        #self.knn = self.trainClassifierWithData(self.xTrain, self.yTrain)
+        self.knn = self.trainClassifierWithData(self.xTrain, self.yTrain)
 
     def loadTestSetFromFile(self):
         self.xTest, self.yTest = self.dataFromCsvNamed('test.csv', False)
@@ -97,8 +97,9 @@ class PicturePredictor:
 
         #do something else
         print metrics.accuracy_score(self.Y_test, summeryPrediction)
-
-
+        
+'''
 pic = PicturePredictor()
 pic.createRandomForest(10)
 pic.predict()
+'''
