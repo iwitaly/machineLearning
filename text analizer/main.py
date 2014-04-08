@@ -1,10 +1,14 @@
 from os import walk
 from sys import argv
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.svm import LinearSVC
+from sklearn.svm import SVC, LinearSVC
+from sklearn.ensemble import RandomForestClassifier
 from sklearn import cross_validation
+from sklearn.decomposition import PCA
 import sklearn
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 def readTexts(dirpath):
 	textList = []
@@ -18,10 +22,7 @@ def readTexts(dirpath):
 			fin.close()
 	return textList
 
-
-vectorizer = CountVectorizer(min_df = 1)
-
-sportCorpus = readTexts("rec.sport.hockey.hockey")
+sportCorpus = readTexts("rec.sport.hockey")
 politCorpus = readTexts("talk.politics.mideast")
 compCorpus = readTexts("comp.graphics")
 
@@ -29,17 +30,43 @@ labels = ['sport'] * len(sportCorpus) + ['polit'] * len(politCorpus) + ['comp'] 
 
 corpus = sportCorpus + politCorpus + compCorpus
 
-model = LinearSVC()
+def predictWithClassifier(model=RandomForestClassifier()):
+    kfold = cross_validation.KFold(len(corpus), n_folds=5)
+    results = []
 
-#kfold = cross_validation.KFold(len(corpus), n_folds=10)
-kfold = cross_validation.StratifiedKFold(corpus, n_folds=4)
-results = []
+    vectorizer = CountVectorizer(max_features=1000)
+    p = PCA(n_components=20)
 
-for train_indices, test_indices in kfold:
-    featureList = vectorizer.fit_transform([corpus[i] for i in train_indices])
-    model.fit(featureList, [labels[i] for i in train_indices])
+    for train_indices, test_indices in kfold:
+        featureList = vectorizer.fit_transform([corpus[i] for i in train_indices])
+        featureList = p.fit_transform(featureList.toarray())
 
-    featureListTest = vectorizer.transform([corpus[i] for i in test_indices])
-    results.append(model.score(featureListTest, [labels[i] for i in test_indices]))
+        model.fit(featureList, [labels[i] for i in train_indices])
 
-print sum(results) / len(results)
+        featureListTest = vectorizer.transform([corpus[i] for i in test_indices])
+        featureListTest = p.transform(featureListTest.toarray())
+
+        results.append(model.score(featureListTest, [labels[i] for i in test_indices]))
+
+    print sum(results) / len(results)
+
+def plotText(): #create featured description for all train_set and plot points with different color for different texts
+    vectorizer = CountVectorizer(max_features=1000)
+    p = PCA(n_components=2)
+
+    c = vectorizer.fit_transform(corpus)
+    c = p.fit_transform(c.toarray())
+    x, y = [], []
+
+    for i in c:
+        x.append(i[0])
+        y.append(i[1])
+
+    n1, n2 = len(sportCorpus), len(politCorpus)
+
+    plt.plot(x[:n1], y[:n1], 'ro', x[n1:n1+n2], y[n1:n1+n2], 'go', x[n1+n2:], y[n1+n2:], 'bo')
+    plt.show()
+
+#predictWithClassifier()
+
+plotText()
